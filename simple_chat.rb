@@ -40,6 +40,7 @@ class SimpleChatClient
       'message' => message,
       'tags' => tags
     }))
+  end
 
   def onmessage(&block)
     @onmsg_block = block
