@@ -14,6 +14,13 @@ class SimpleChatClient
     }))
   end
 
+  def new_user(name)
+    @ws.send(JSON.generate({
+      'type' => 'new_user',
+      'name' => name
+    }))
+  end
+
   def onlogin
     @ws.on :message do |json|
       obj = JSON.parse(json.to_s)
