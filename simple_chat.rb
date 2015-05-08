@@ -5,12 +5,6 @@ class SimpleChatClient
   attr_reader :user
   def initialize(uri)
     @ws =  WebSocket::Client::Simple.connect uri
-    @ws.on :message do |json|
-      obj = json.parse(json)
-      if obj['type'] == 'self_user_data' then
-        @user = obj['user']
-      end
-    end
   end
 
   def init(id)
@@ -18,6 +12,16 @@ class SimpleChatClient
       'type' => 'get_user_data',
       'id' => id
     }))
+  end
+
+  def onlogin
+    @ws.on :message do |json|
+      obj = JSON.parse(json.to_s)
+      if obj['type'] == 'self_user_data' then
+        @user = obj['user']
+        yield(@user)
+      end
+    end
   end
 
   def send_message(message, tags)
@@ -30,7 +34,7 @@ class SimpleChatClient
 
   def onmessage
     @ws.on :message do |json|
-      obj = json.parse(json)
+      obj = JSON.parse(json.to_s)
       if obj['type'] == 'broadcast' then
         yield(obj['name'], obj['message'], 'broadcast', obj['tags'])
       end
@@ -39,7 +43,7 @@ class SimpleChatClient
 
   def onerror
     @ws.on :message do |json|
-      obj = json.parse(json)
+      obj = JSON.parse(json.to_s)
       if obj['type'] == 'error' then
         yield(obj['message'])
       end
