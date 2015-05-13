@@ -5,6 +5,9 @@ class SimpleChatClient
   attr_reader :user
   def initialize(uri)
     @ws =  WebSocket::Client::Simple.connect uri
+    onlogin do |user|
+      @user = user
+    end
   end
 
   def init(id)
@@ -25,14 +28,14 @@ class SimpleChatClient
     @ws.on :message do |json|
       obj = JSON.parse(json.to_s)
       if obj['type'] == 'self_user_data' then
-        @user = obj['user']
-        yield(@user)
+        yield(obj['user'])
       end
     end
   end
 
   def send_message(message, tags)
     @ws.send(JSON.generate({
+      'id' => @user['id'],
       'type' => 'broadcast',
       'message' => message,
       'tags' => tags
